@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resume Builder</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>Resume Builder</h1>
+    <p>Fill in your details below to generate and download your resume</p>
+  </header>
+
+  <!-- Form Section -->
+  <form id="resumeForm">
+    <label>Upload Profile Photo:</label>
+    <input type="file" id="photo" accept="image/*">
+
+    <label>Name:</label>
+    <input type="text" id="name" required>
+
+    <label>Title:</label>
+    <input type="text" id="title" required>
+
+    <label>About Me:</label>
+    <textarea id="about" rows="4"></textarea>
+
+    <label>Skills (comma separated):</label>
+    <input type="text" id="skills">
+
+    <label>Experience:</label>
+    <textarea id="experience" rows="4"></textarea>
+
+    <label>Education:</label>
+    <textarea id="education" rows="3"></textarea>
+
+    <!-- Projects Section -->
+    <h3>Projects</h3>
+    <div id="projectsSection">
+      <div class="project">
+        <label>Project Title:</label>
+        <input type="text" class="projectTitle">
+        <label>Project Brief:</label>
+        <textarea class="projectBrief" rows="3"></textarea>
+      </div>
+    </div>
+    <button type="button" onclick="addProject()">+ Add Another Project</button>
+
+    <label>Contact Info:</label>
+    <input type="text" id="contact">
+
+    <button type="button" onclick="generateResume()">Generate Resume</button>
+    <button type="button" onclick="downloadPDF()">Download as PDF</button>
+  </form>
+
+  <!-- Resume Output -->
+  <div id="resumeOutput"></div>
+
+  <script>
+    function addProject() {
+      const projectDiv = document.createElement("div");
+      projectDiv.classList.add("project");
+      projectDiv.innerHTML = `
+        <label>Project Title:</label>
+        <input type="text" class="projectTitle">
+        <label>Project Brief:</label>
+        <textarea class="projectBrief" rows="3"></textarea>
+      `;
+      document.getElementById("projectsSection").appendChild(projectDiv);
+    }
+
+    function generateResume() {
+      const name = document.getElementById("name").value;
+      const title = document.getElementById("title").value;
+      const about = document.getElementById("about").value;
+      const skills = document.getElementById("skills").value.split(",");
+      const experience = document.getElementById("experience").value;
+      const education = document.getElementById("education").value;
+      const contact = document.getElementById("contact").value;
+
+      // Handle photo upload
+      const photoInput = document.getElementById("photo");
+      let photoHTML = "";
+      if (photoInput.files && photoInput.files[0]) {
+        const photoURL = URL.createObjectURL(photoInput.files[0]);
+        photoHTML = `<img src="${photoURL}" alt="Profile Photo" class="profile-photo">`;
+      }
+
+      // Collect projects
+      const projectTitles = document.querySelectorAll(".projectTitle");
+      const projectBriefs = document.querySelectorAll(".projectBrief");
+      let projectsHTML = "";
+      for (let i = 0; i < projectTitles.length; i++) {
+        const title = projectTitles[i].value.trim();
+        const brief = projectBriefs[i].value.trim();
+        if (title || brief) {
+          projectsHTML += `<h4>${title}</h4><p>${brief}</p>`;
+        }
+      }
+
+      document.getElementById("resumeOutput").innerHTML = `
+        <div class="resume-header">
+          ${photoHTML}
+          <div>
+            <h1>${name}</h1>
+            <h2>${title}</h2>
+          </div>
+        </div>
+        <h3>About Me</h3>
+        <p>${about}</p>
+        <h3>Skills</h3>
+        <ul>${skills.map(skill => `<li>${skill.trim()}</li>`).join("")}</ul>
+        <h3>Experience</h3>
+        <p>${experience}</p>
+        <h3>Education</h3>
+        <p>${education}</p>
+        <h3>Projects</h3>
+        ${projectsHTML}
+        <h3>Contact</h3>
+        <p>${contact}</p>
+      `;
+    }
+
+    function downloadPDF() {
+      const resumeElement = document.getElementById("resumeOutput");
+      const options = {
+        margin: 0.5,
+        filename: 'resume.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(options).from(resumeElement).save();
+    }
+  </script>
+
+</body>
+</html>
